@@ -16,7 +16,7 @@ class AppStrings {
   static const String registerButton = 'Registrarse';
   static const String loginButton = 'Iniciar Sesión';
   static const String invalidEmail = 'Por favor, introduce un correo válido.';
-  static const String shortPassword = 'La contraseña debe tener al menos 6 caracteres.';
+  static const String shortPassword = 'La contraseña debe tener al menos 8 caracteres.';
   static const String passwordsDoNotMatch = 'Las contraseñas no coinciden.';
   static const String fillAllFields = 'Por favor, rellena todos los campos.';
   static const String registrationSuccess = 'Registro exitoso. Inicia sesión.';

@@ -7,7 +7,8 @@ class User extends Equatable {
   final String? fullName; // [cite: 1]
   final String? lastName; // [cite: 1]
   final DateTime? dateOfBirth; // [cite: 1]
-  final String? gender; // [cite: 1]
+  final String? gender;
+  final String? country; 
 
   const User({
     required this.id,
@@ -16,8 +17,9 @@ class User extends Equatable {
     this.lastName,
     this.dateOfBirth,
     this.gender,
+    this.country,
   });
 
   @override
-  List<Object?> get props => [id, email, fullName, lastName, dateOfBirth, gender];
+  List<Object?> get props => [id, email, fullName, lastName, dateOfBirth, gender, country];
 }

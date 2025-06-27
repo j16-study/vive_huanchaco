@@ -105,7 +105,7 @@ class _LoginScreenState extends State<LoginScreen> {
                       if (value == null || value.isEmpty) {
                         return AppStrings.fillAllFields;
                       }
-                      if (value.length < 6) {
+                      if (value.length < 8) {   // <-- CAMBIO AQUÍ
                         return AppStrings.shortPassword;
                       }
                       return null;

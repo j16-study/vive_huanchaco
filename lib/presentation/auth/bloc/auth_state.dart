@@ -55,6 +55,8 @@ class RegisterUserEvent extends AuthEvent {
   final String? lastName;
   final DateTime? dateOfBirth;
   final String? gender;
+  final String? country;
+
 
   const RegisterUserEvent({
     required this.email,
@@ -64,6 +66,7 @@ class RegisterUserEvent extends AuthEvent {
     this.lastName,
     this.dateOfBirth,
     this.gender,
+    this.country,
   });
 
   @override
@@ -76,6 +79,7 @@ class RegisterUserEvent extends AuthEvent {
     if (lastName != null) lastName!,
     if (dateOfBirth != null) dateOfBirth!,
     if (gender != null) gender!,
+    if (country != null) country!,
   ];
 }
 

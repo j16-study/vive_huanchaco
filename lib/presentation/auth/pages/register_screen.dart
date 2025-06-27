@@ -21,8 +21,22 @@ class _RegisterScreenState extends State<RegisterScreen> {
   final TextEditingController _fullNameController = TextEditingController(); // [cite: 1]
   final TextEditingController _lastNameController = TextEditingController(); // [cite: 1]
   final TextEditingController _dateOfBirthController = TextEditingController(); // [cite: 1]
-  String? _selectedGender; // [cite: 1]
-  DateTime? _selectedDate; // [cite: 1]
+  String? _selectedGender; 
+  DateTime? _selectedDate; 
+  String? _selectedCountry; // <--- nuevo para agregar a la lista
+
+  final List<String> _countries = [ // <-- NUEVA LISTA DE PAÍSES
+    'Perú',
+    'Argentina',
+    'Bolivia',
+    'Brasil',
+    'Chile',
+    'Colombia',
+    'Ecuador',
+    'México',
+    'España',
+    'Estados Unidos'
+  ];
 
   @override
   void dispose() {
@@ -61,6 +75,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
           lastName: _lastNameController.text.trim(), // [cite: 1]
           dateOfBirth: _selectedDate, // [cite: 1]
           gender: _selectedGender, // [cite: 1]
+          country: _selectedCountry, // <-- NUEVO
         ),
       );
     }
@@ -174,6 +189,32 @@ class _RegisterScreenState extends State<RegisterScreen> {
                     },
                   ),
                   const SizedBox(height: 20),
+                  DropdownButtonFormField<String>( // <-- NUEVO WIDGET
+                    value: _selectedCountry,
+                    decoration: const InputDecoration(
+                      labelText: 'País de Origen',
+                      border: OutlineInputBorder(),
+                      prefixIcon: Icon(Icons.flag),
+                    ),
+                    items: _countries.map((String country) {
+                      return DropdownMenuItem<String>(
+                        value: country,
+                        child: Text(country),
+                      );
+                    }).toList(),
+                    onChanged: (value) {
+                      setState(() {
+                        _selectedCountry = value;
+                      });
+                    },
+                    validator: (value) {
+                      if (value == null || value.isEmpty) {
+                        return AppStrings.fillAllFields;
+                      }
+                      return null;
+                    },
+                  ),
+                  const SizedBox(height: 20),
                   TextFormField(
                     controller: _emailController,
                     decoration: const InputDecoration(
@@ -205,7 +246,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                       if (value == null || value.isEmpty) {
                         return AppStrings.fillAllFields;
                       }
-                      if (value.length < 6) {
+                      if (value.length < 8) {
                         return AppStrings.shortPassword;
                       }
                       return null;

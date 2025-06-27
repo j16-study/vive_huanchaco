@@ -41,6 +41,7 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
       lastName: event.lastName, // [cite: 1]
       dateOfBirth: event.dateOfBirth, // [cite: 1]
       gender: event.gender, // [cite: 1]
+      country: event.country, // <-- NUEVO
     ));
 
     result.fold(

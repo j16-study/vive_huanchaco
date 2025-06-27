@@ -26,6 +26,7 @@ class RegisterParams extends Equatable with EquatableMixin { // Corregido: 'exte
   final String? lastName;
   final DateTime? dateOfBirth;
   final String? gender;
+  final String? country;
 
   const RegisterParams({
     required this.email,
@@ -35,8 +36,9 @@ class RegisterParams extends Equatable with EquatableMixin { // Corregido: 'exte
     this.lastName,
     this.dateOfBirth,
     this.gender,
+    this.country,
   });
 
   @override
-  List<Object?> get props => [email, password, confirmPassword, fullName, lastName, dateOfBirth, gender];
+  List<Object?> get props => [email, password, confirmPassword, fullName, lastName, dateOfBirth, gender, country];
 }

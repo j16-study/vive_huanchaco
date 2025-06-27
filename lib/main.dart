@@ -4,8 +4,8 @@ import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:vive_huanchaco/presentation/auth/bloc/auth_bloc.dart';
 import 'package:vive_huanchaco/presentation/places/bloc/navigation_bloc.dart'; // <--- NUEVA IMPORTACIÓN
-import 'package:vive_huanchaco/presentation/auth/pages/login_screen.dart';
-import 'package:vive_huanchaco/presentation/places/pages/home_screen.dart'; // Importar HomeScreen
+//import 'package:vive_huanchaco/presentation/auth/pages/login_screen.dart';
+//import 'package:vive_huanchaco/presentation/places/pages/home_screen.dart'; // Importar HomeScreen
 import 'package:vive_huanchaco/domain/auth/usecases/register_user_usecase.dart';
 import 'package:vive_huanchaco/domain/auth/usecases/login_user_usecase.dart';
 import 'package:vive_huanchaco/domain/auth/usecases/logout_user_usecase.dart';
@@ -26,6 +26,9 @@ import 'package:vive_huanchaco/domain/places/repositories/place_repository.dart'
 import 'package:vive_huanchaco/domain/places/usecases/get_places_usecase.dart'; // <--- NUEVA IMPORTACIÓN
 import 'package:vive_huanchaco/domain/places/usecases/get_places_by_category_usecase.dart'; // <--- NUEVA IMPORTACIÓN
 import 'package:vive_huanchaco/domain/places/usecases/add_place_usecase.dart'; // <--- NUEVA IMPORTACIÓN
+
+
+import 'package:vive_huanchaco/presentation/screens/splash_screen.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -124,14 +127,7 @@ class MyApp extends StatelessWidget {
           primarySwatch: Colors.blue,
           visualDensity: VisualDensity.adaptivePlatformDensity,
         ),
-        home: BlocBuilder<AuthBloc, AuthState>(
-          builder: (context, authState) {
-            if (authState is AuthSuccess) {
-              return const HomeScreen();
-            }
-            return const LoginScreen();
-          },
-        ),
+        home: const SplashScreen(), // <-- CAMBIO AQUÍ
       ),
     );
   }
