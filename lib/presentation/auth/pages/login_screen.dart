@@ -1,4 +1,3 @@
-// vive_huanchaco/lib/features/auth/presentation/pages/login_screen.dart
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:vive_huanchaco/core/utils/app_colors.dart';
@@ -106,7 +105,7 @@ class _LoginScreenState extends State<LoginScreen> {
                         return AppStrings.fillAllFields;
                       }
                       if (value.length < 8) {   // <-- CAMBIO AQUÍ
-                        return AppStrings.shortPassword;
+                        return AppStrings.shortPassword;   // <-- Retorna un string donde indica  que el minimo es de 8 caracteres
                       }
                       return null;
                     },

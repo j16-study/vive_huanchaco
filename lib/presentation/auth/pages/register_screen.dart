@@ -35,7 +35,8 @@ class _RegisterScreenState extends State<RegisterScreen> {
     'Ecuador',
     'México',
     'España',
-    'Estados Unidos'
+    'Estados Unidos',
+    'Otro'
   ];
 
   @override
@@ -71,10 +72,10 @@ class _RegisterScreenState extends State<RegisterScreen> {
           email: _emailController.text.trim(),
           password: _passwordController.text.trim(),
           confirmPassword: _confirmPasswordController.text.trim(),
-          fullName: _fullNameController.text.trim(), // [cite: 1]
-          lastName: _lastNameController.text.trim(), // [cite: 1]
-          dateOfBirth: _selectedDate, // [cite: 1]
-          gender: _selectedGender, // [cite: 1]
+          fullName: _fullNameController.text.trim(), 
+          lastName: _lastNameController.text.trim(), 
+          dateOfBirth: _selectedDate, 
+          gender: _selectedGender, 
           country: _selectedCountry, // <-- NUEVO
         ),
       );
@@ -165,6 +166,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                     ),
                   ),
                   const SizedBox(height: 20),
+                  // --------
                   DropdownButtonFormField<String>(
                     value: _selectedGender, // [cite: 1]
                     decoration: const InputDecoration(
@@ -188,6 +190,8 @@ class _RegisterScreenState extends State<RegisterScreen> {
                       return null;
                     },
                   ),
+
+                  // --------
                   const SizedBox(height: 20),
                   DropdownButtonFormField<String>( // <-- NUEVO WIDGET
                     value: _selectedCountry,
@@ -246,7 +250,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                       if (value == null || value.isEmpty) {
                         return AppStrings.fillAllFields;
                       }
-                      if (value.length < 8) {
+                      if (value.length < 8) { // Para validar el minimo de 8 caracteres
                         return AppStrings.shortPassword;
                       }
                       return null;

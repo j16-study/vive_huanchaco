@@ -1,4 +1,3 @@
-// vive_huanchaco/lib/core/utils/app_strings.dart
 class AppStrings {
 
   static const String appName = 'Vive Huanchaco'; // nombre de la aplicacion
@@ -34,8 +33,8 @@ class AppStrings {
   static const String restaurants = 'Restaurantes';
   static const String parks = 'Parques';
   static const String beaches = 'Playas';
-  static const String shoppingMalls = 'Centros Comerciales';
-  static const String banks = 'Bancos';
+  static const String cafes = 'Cafeterías';
+  static const String bars = 'Bares';
   static const String settings = 'Ajustes';
   static const String logoutButton = 'Cerrar Sesión'; // Ya debería estar definido
 

@@ -19,9 +19,10 @@ import 'package:vive_huanchaco/presentation/places/pages/hotels_screen.dart';
 import 'package:vive_huanchaco/presentation/places/pages/restaurants_screen.dart';
 import 'package:vive_huanchaco/presentation/places/pages/parks_screen.dart';
 import 'package:vive_huanchaco/presentation/places/pages/beaches_screen.dart';
-import 'package:vive_huanchaco/presentation/places/pages/shopping_malls_screen.dart';
-import 'package:vive_huanchaco/presentation/places/pages/banks_screen.dart';
-
+// --- NUEVAS IMPORTACIONES ---
+import 'package:vive_huanchaco/presentation/places/pages/cafes_screen.dart';
+import 'package:vive_huanchaco/presentation/places/pages/bars_screen.dart';
+// import 'package:vive_huanchaco/presentation/settings/pages/settings_screen.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -45,26 +46,28 @@ class _HomeScreenState extends State<HomeScreen> {
     const RestaurantsScreen(),
     const ParksScreen(),
     const BeachesScreen(),
-    const ShoppingMallsScreen(),
-    const BanksScreen(),
+    const CafesScreen(),
+    const BarsScreen(),
   ];
-
 
   @override
   Widget build(BuildContext context) {
     return BlocConsumer<AuthBloc, AuthState>(
       listener: (context, authState) {
         if (authState is AuthLoggedOut) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text(authState.message)),
-          );
+          ScaffoldMessenger.of(
+            context,
+          ).showSnackBar(SnackBar(content: Text(authState.message)));
           Navigator.of(context).pushAndRemoveUntil(
             MaterialPageRoute(builder: (context) => const LoginScreen()),
             (Route<dynamic> route) => false,
           );
         } else if (authState is AuthError) {
           ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text(authState.message), backgroundColor: AppColors.errorColor),
+            SnackBar(
+              content: Text(authState.message),
+              backgroundColor: AppColors.errorColor,
+            ),
           );
         }
       },
@@ -79,24 +82,24 @@ class _HomeScreenState extends State<HomeScreen> {
               currentBody = _drawerScreens[navState.drawerItemIndex];
               // Aquí podrías cambiar el título del AppBar según la sección del Drawer
               switch (navState.drawerItemIndex) {
+                case 0: appBarTitle = 'Home'; break;
                 case 1: appBarTitle = 'Museos'; break;
-                case 2: appBarTitle = 'Hoteles'; break;
+                case 2: appBarTitle = 'Hoteles';  break;
                 case 3: appBarTitle = 'Restaurantes'; break;
-                case 4: appBarTitle = 'Parques'; break;
+                case 4: appBarTitle = 'Parques';  break;
                 case 5: appBarTitle = 'Playas'; break;
-                case 6: appBarTitle = 'Centros Comerciales'; break;
-                case 7: appBarTitle = 'Bancos'; break;
-                default: appBarTitle = 'Home'; break;
+                case 6: appBarTitle = 'Cafeterías'; break;
+                case 7: appBarTitle = 'Bares';  break;
+                default: appBarTitle = 'Home';  break;
               }
             } else if (navState is NavigationTabChanged) {
-                 switch (navState.currentIndex) {
-                  case 0: appBarTitle = 'Lugares Favoritos'; break;
-                  case 1: appBarTitle = 'Home'; break;
-                  case 2: appBarTitle = 'Experiencias y Eventos'; break;
-                  default: appBarTitle = 'Home'; break;
-                }
+              switch (navState.currentIndex) {
+                case 0: appBarTitle = 'Lugares Favoritos';  break;
+                case 1: appBarTitle = 'Home'; break;
+                case 2: appBarTitle = 'Experiencias y Eventos'; break;
+                default:  appBarTitle = 'Home'; break;
+              }
             }
-
 
             return Scaffold(
               appBar: AppBar(
@@ -119,7 +122,9 @@ class _HomeScreenState extends State<HomeScreen> {
                 unselectedItemColor: Colors.grey,
                 onTap: (index) {
                   // Cuando se toca un ítem del Bottom Nav, despacha el evento
-                  BlocProvider.of<NavigationBloc>(context).add(NavigateToTabEvent(index));
+                  BlocProvider.of<NavigationBloc>(
+                    context,
+                  ).add(NavigateToTabEvent(index));
                 },
                 items: const [
                   BottomNavigationBarItem(

@@ -33,7 +33,7 @@ class CustomNavigationDrawer extends StatelessWidget {
                   builder: (context, state) {
                     if (state is AuthSuccess) {
                       return Text(
-                        state.user.email ?? 'Usuario Trux',
+                        state.user.email ?? 'Vive Huanchaco',
                         style: const TextStyle(
                           color: Colors.white,
                           fontSize: 16,
@@ -54,14 +54,15 @@ class CustomNavigationDrawer extends StatelessWidget {
               ],
             ),
           ),
+
           _buildDrawerItem(context, 0, Icons.home, AppStrings.homeTab), // Home también en el drawer
           _buildDrawerItem(context, 1, Icons.museum, AppStrings.museums),
           _buildDrawerItem(context, 2, Icons.hotel, AppStrings.hotels),
           _buildDrawerItem(context, 3, Icons.restaurant, AppStrings.restaurants),
+          _buildDrawerItem(context, 6, Icons.coffee, AppStrings.cafes),
+          _buildDrawerItem(context, 7, FontAwesomeIcons.martiniGlass, AppStrings.bars),
           _buildDrawerItem(context, 4, Icons.park, AppStrings.parks),
-          _buildDrawerItem(context, 5, Icons.beach_access, AppStrings.beaches),
-          _buildDrawerItem(context, 6, Icons.shopping_cart, AppStrings.shoppingMalls),
-          _buildDrawerItem(context, 7, FontAwesomeIcons.buildingColumns, AppStrings.banks), // Icono de banco
+          _buildDrawerItem(context, 5, FontAwesomeIcons.umbrellaBeach, AppStrings.beaches),
           const Divider(),
           _buildDrawerItem(context, -1, Icons.settings, AppStrings.settings), // Ajustes
           _buildDrawerItem(context, -2, Icons.logout, AppStrings.logoutButton, isLogout: true), // Cerrar sesión
