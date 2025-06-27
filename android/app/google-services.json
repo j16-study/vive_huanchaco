@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "1048311675538",
+    "project_id": "vive-huanchaco",
+    "storage_bucket": "vive-huanchaco.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:1048311675538:android:0eac1ede8a70cd706e444b",
+        "android_client_info": {
+          "package_name": "com.example.vive_huanchaco"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyA6V2ox2kFSyrWswXBpGyy5siAfVV87vPE"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

@@ -1,0 +1,42 @@
+// vive_huanchaco/lib/features/auth/domain/usecases/register_user_usecase.dart
+
+import 'package:dartz/dartz.dart';
+import 'package:equatable/equatable.dart'; // Importa Equatable
+import 'package:vive_huanchaco/core/error/failures.dart';
+import 'package:vive_huanchaco/core/usecases/usecase.dart';
+import 'package:vive_huanchaco/domain/auth/entities/user.dart';
+import 'package:vive_huanchaco/domain/auth/repositories/auth_repository.dart';
+
+class RegisterUserUseCase implements UseCase<User, RegisterParams> {
+  final AuthRepository repository;
+
+  RegisterUserUseCase(this.repository);
+
+  @override
+  Future<Either<Failure, User>> call(RegisterParams params) async {
+    return await repository.registerUser(params.email, params.password);
+  }
+}
+
+class RegisterParams extends Equatable with EquatableMixin { // Corregido: 'extends Equatable' a 'with EquatableMixin'
+  final String email;
+  final String password;
+  final String confirmPassword;
+  final String? fullName;
+  final String? lastName;
+  final DateTime? dateOfBirth;
+  final String? gender;
+
+  const RegisterParams({
+    required this.email,
+    required this.password,
+    required this.confirmPassword,
+    this.fullName,
+    this.lastName,
+    this.dateOfBirth,
+    this.gender,
+  });
+
+  @override
+  List<Object?> get props => [email, password, confirmPassword, fullName, lastName, dateOfBirth, gender];
+}
