@@ -1,50 +1,10 @@
 part of 'auth_bloc.dart';
 
-abstract class AuthState extends Equatable {
-  const AuthState();
-
-  @override
-  List<Object> get props => [];
-}
-
-class AuthInitial extends AuthState {}
-
-class AuthLoading extends AuthState {}
-
-class AuthSuccess extends AuthState {
-  final User user;
-  final String message;
-
-  const AuthSuccess({required this.user, required this.message});
-
-  @override
-  List<Object> get props => [user, message];
-}
-
-class AuthLoggedOut extends AuthState {
-  final String message;
-
-  const AuthLoggedOut({required this.message});
-
-  @override
-  List<Object> get props => [message];
-}
-
-class AuthError extends AuthState {
-  final String message;
-
-  const AuthError({required this.message});
-
-  @override
-  List<Object> get props => [message];
-}
-
-/*
 abstract class AuthEvent extends Equatable {
   const AuthEvent();
 
   @override
-  List<Object> get props => [];
+  List<Object?> get props => [];
 }
 
 class RegisterUserEvent extends AuthEvent {
@@ -55,7 +15,7 @@ class RegisterUserEvent extends AuthEvent {
   final String? lastName;
   final DateTime? dateOfBirth;
   final String? gender;
-  final String? country;
+  final String? country; // Añadido
 
   const RegisterUserEvent({
     required this.email,
@@ -65,7 +25,7 @@ class RegisterUserEvent extends AuthEvent {
     this.lastName,
     this.dateOfBirth,
     this.gender,
-    this.country,
+    this.country, // Añadido
   });
 
   @override
@@ -88,8 +48,7 @@ class LoginUserEvent extends AuthEvent {
   const LoginUserEvent({required this.email, required this.password});
 
   @override
-  List<Object> get props => [email, password]; // <--- CAMBIO AQUÍ: Eliminado '?'
+  List<Object> get props => [email, password];
 }
 
 class LogoutUserEvent extends AuthEvent {}
-*/

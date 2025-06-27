@@ -1,4 +1,3 @@
-// vive_huanchaco/lib/features/auth/presentation/bloc/auth_bloc.dart
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:equatable/equatable.dart';
 import 'package:vive_huanchaco/core/error/failures.dart';
@@ -10,6 +9,7 @@ import 'package:vive_huanchaco/domain/auth/usecases/logout_user_usecase.dart';
 import 'package:vive_huanchaco/domain/auth/usecases/register_user_usecase.dart';
 
 part 'auth_state.dart';
+part 'auth_event.dart';
 
 class AuthBloc extends Bloc<AuthEvent, AuthState> {
   final RegisterUserUseCase registerUserUseCase;
@@ -37,11 +37,11 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
       email: event.email,
       password: event.password,
       confirmPassword: event.confirmPassword,
-      fullName: event.fullName, // [cite: 1]
-      lastName: event.lastName, // [cite: 1]
-      dateOfBirth: event.dateOfBirth, // [cite: 1]
-      gender: event.gender, // [cite: 1]
-      country: event.country, // <-- NUEVO
+      fullName: event.fullName, 
+      lastName: event.lastName, 
+      dateOfBirth: event.dateOfBirth,
+      gender: event.gender,
+      country: event.country,
     ));
 
     result.fold(

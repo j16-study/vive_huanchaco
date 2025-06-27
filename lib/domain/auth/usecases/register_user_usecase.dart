@@ -1,5 +1,3 @@
-// vive_huanchaco/lib/features/auth/domain/usecases/register_user_usecase.dart
-
 import 'package:dartz/dartz.dart';
 import 'package:equatable/equatable.dart'; // Importa Equatable
 import 'package:vive_huanchaco/core/error/failures.dart';
@@ -14,11 +12,19 @@ class RegisterUserUseCase implements UseCase<User, RegisterParams> {
 
   @override
   Future<Either<Failure, User>> call(RegisterParams params) async {
-    return await repository.registerUser(params.email, params.password);
+    return await repository.registerUser(
+      params.email,
+      params.password,
+      params.fullName!,
+      params.lastName!,
+      params.dateOfBirth!,
+      params.gender!,
+      params.country!,
+      );
   }
 }
 
-class RegisterParams extends Equatable with EquatableMixin { // Corregido: 'extends Equatable' a 'with EquatableMixin'
+class RegisterParams extends Equatable { // Corregido: 'extends Equatable' a 'with EquatableMixin'
   final String email;
   final String password;
   final String confirmPassword;
