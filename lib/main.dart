@@ -1,31 +1,30 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:vive_huanchaco/presentation/auth/bloc/auth_bloc.dart';
-import 'package:vive_huanchaco/presentation/places/bloc/navigation_bloc.dart'; 
-import 'package:vive_huanchaco/domain/auth/usecases/register_user_usecase.dart';
-import 'package:vive_huanchaco/domain/auth/usecases/login_user_usecase.dart';
-import 'package:vive_huanchaco/domain/auth/usecases/logout_user_usecase.dart';
-import 'package:vive_huanchaco/data/auth/repositories/auth_repository_impl.dart';
-import 'package:vive_huanchaco/data/auth/datasources/auth_remote_data_source.dart';
-import 'package:vive_huanchaco/data/auth/datasources/auth_local_data_source.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:firebase_auth/firebase_auth.dart' as fb_auth;
 import 'package:vive_huanchaco/firebase_options.dart';
 
-//nuevas importaciones:
-import 'package:vive_huanchaco/presentation/places/bloc/place_bloc.dart';
-import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:vive_huanchaco/data/auth/repositories/auth_repository_impl.dart';
+import 'package:vive_huanchaco/data/auth/datasources/auth_remote_data_source.dart';
+import 'package:vive_huanchaco/data/auth/datasources/auth_local_data_source.dart';
 import 'package:vive_huanchaco/data/places/datasources/place_remote_data_source.dart';
 import 'package:vive_huanchaco/data/places/datasources/place_remote_data_source_impl.dart';
 import 'package:vive_huanchaco/data/places/repositories/place_repository_impl.dart';
+
+import 'package:vive_huanchaco/domain/auth/usecases/register_user_usecase.dart';
+import 'package:vive_huanchaco/domain/auth/usecases/login_user_usecase.dart';
+import 'package:vive_huanchaco/domain/auth/usecases/logout_user_usecase.dart';
 import 'package:vive_huanchaco/domain/places/repositories/place_repository.dart';
 import 'package:vive_huanchaco/domain/places/usecases/get_places_usecase.dart';
 import 'package:vive_huanchaco/domain/places/usecases/get_places_by_category_usecase.dart';
 import 'package:vive_huanchaco/domain/places/usecases/add_place_usecase.dart';
 
-
 import 'package:vive_huanchaco/presentation/screens/splash_screen.dart';
+import 'package:vive_huanchaco/presentation/auth/bloc/auth_bloc.dart';
+import 'package:vive_huanchaco/presentation/places/bloc/navigation_bloc.dart'; 
+import 'package:vive_huanchaco/presentation/places/bloc/place_bloc.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -33,14 +32,14 @@ void main() async {
 
   final fb_auth.FirebaseAuth firebaseAuth = fb_auth.FirebaseAuth.instance;
   final FirebaseFirestore firebaseFirestore = FirebaseFirestore.instance;
-  final SharedPreferences sharedPreferences =
-      await SharedPreferences.getInstance();
+  final SharedPreferences sharedPreferences = await SharedPreferences.getInstance();
 
   // AUTH DEPENDENCIES
   final AuthRemoteDataSource authRemoteDataSource = AuthRemoteDataSourceImpl(
     firebaseAuth: firebaseAuth,
     firestore: firebaseFirestore,
   );
+
   final AuthLocalDataSource authLocalDataSource = AuthLocalDataSourceImpl(
     sharedPreferences: sharedPreferences,
   );
@@ -125,7 +124,7 @@ class MyApp extends StatelessWidget {
           primarySwatch: Colors.blue,
           visualDensity: VisualDensity.adaptivePlatformDensity,
         ),
-        home: const SplashScreen(), // <-- CAMBIO AQUÍ
+        home: const SplashScreen(),
       ),
     );
   }
