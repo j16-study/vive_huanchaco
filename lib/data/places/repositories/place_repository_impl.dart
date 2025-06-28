@@ -1,4 +1,3 @@
-// vive_huanchaco/lib/features/places/data/repositories/place_repository_impl.dart
 import 'package:dartz/dartz.dart';
 import 'package:vive_huanchaco/core/error/exceptions.dart';
 import 'package:vive_huanchaco/core/error/failures.dart';
@@ -40,4 +39,46 @@ class PlaceRepositoryImpl implements PlaceRepository {
       return Left(ServerFailure(message: e.message));
     }
   }
+
+  // --- IMPLEMENTACIÓN DE NUEVOS MÉTODOS ---
+  @override
+  Future<Either<Failure, void>> addPlaceToFavorites(String userId, String placeId) async {
+    try {
+      await remoteDataSource.addPlaceToFavorites(userId, placeId);
+      return const Right(null);
+    } on ServerException catch (e) {
+      return Left(ServerFailure(message: e.message));
+    }
+  }
+
+  @override
+  Future<Either<Failure, void>> removePlaceFromFavorites(String userId, String placeId) async {
+    try {
+      await remoteDataSource.removePlaceFromFavorites(userId, placeId);
+      return const Right(null);
+    } on ServerException catch (e) {
+      return Left(ServerFailure(message: e.message));
+    }
+  }
+  
+  @override
+  Future<Either<Failure, List<String>>> getUserFavoritePlacesIds(String userId) async {
+    try {
+      final result = await remoteDataSource.getUserFavoritePlacesIds(userId);
+      return Right(result);
+    } on ServerException catch (e) {
+      return Left(ServerFailure(message: e.message));
+    }
+  }
+
+  @override
+  Future<Either<Failure, void>> submitReview(String placeId, String userId, double rating, String comment) async {
+    try {
+      await remoteDataSource.submitReview(placeId, userId, rating, comment);
+      return const Right(null);
+    } on ServerException catch (e) {
+      return Left(ServerFailure(message: e.message));
+    }
+  }
+  // --- FIN DE LA IMPLEMENTACIÓN ---
 }
