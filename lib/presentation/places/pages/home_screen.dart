@@ -1,4 +1,3 @@
-// vive_huanchaco/lib/features/places/presentation/pages/home_screen.dart
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:vive_huanchaco/presentation/auth/bloc/auth_bloc.dart';
@@ -13,15 +12,9 @@ import 'package:vive_huanchaco/presentation/places/pages/favorite_places_screen.
 import 'package:vive_huanchaco/presentation/places/pages/main_home_content_screen.dart'; // Contenido del Home real
 import 'package:vive_huanchaco/presentation/events/pages/events_screen.dart';
 
-// Importar pantallas placeholder para el Navigation Drawer
-import 'package:vive_huanchaco/presentation/places/pages/museums_screen.dart';
-import 'package:vive_huanchaco/presentation/places/pages/hotels_screen.dart';
-import 'package:vive_huanchaco/presentation/places/pages/restaurants_screen.dart';
-import 'package:vive_huanchaco/presentation/places/pages/parks_screen.dart';
-import 'package:vive_huanchaco/presentation/places/pages/beaches_screen.dart';
-// --- NUEVAS IMPORTACIONES ---
-import 'package:vive_huanchaco/presentation/places/pages/cafes_screen.dart';
-import 'package:vive_huanchaco/presentation/places/pages/bars_screen.dart';
+// --- NUEVA IMPORTACIÓN ---
+import 'package:vive_huanchaco/presentation/places/pages/category_places_screen.dart';
+
 // import 'package:vive_huanchaco/presentation/settings/pages/settings_screen.dart';
 
 class HomeScreen extends StatefulWidget {
@@ -38,16 +31,17 @@ class _HomeScreenState extends State<HomeScreen> {
     const EventsScreen(),
   ];
 
+  // --- LISTA ACTUALIZADA PARA USAR LA NUEVA PANTALLA REUTILIZABLE ---
   final List<Widget> _drawerScreens = [
-    // Las pantallas del drawer podrían ser las mismas que las de bottom nav o nuevas
-    const MainHomeContentScreen(), // Default para el drawer, puedes cambiarlo
-    const MuseumsScreen(),
-    const HotelsScreen(),
-    const RestaurantsScreen(),
-    const ParksScreen(),
-    const BeachesScreen(),
-    const CafesScreen(),
-    const BarsScreen(),
+    const MainHomeContentScreen(),
+    const CategoryPlacesScreen(category: "Museos"),
+    const CategoryPlacesScreen(category: "Hoteles"),
+    const CategoryPlacesScreen(category: "Restaurantes"),
+    const CategoryPlacesScreen(category: "Cafeterías"),
+    const CategoryPlacesScreen(category: "Parques"),
+    const CategoryPlacesScreen(category: "Playas"),
+    const CategoryPlacesScreen(category: "Bares"),
+    const CategoryPlacesScreen(category: "Bancos"),
   ];
 
   @override
@@ -55,19 +49,16 @@ class _HomeScreenState extends State<HomeScreen> {
     return BlocConsumer<AuthBloc, AuthState>(
       listener: (context, authState) {
         if (authState is AuthLoggedOut) {
-          ScaffoldMessenger.of(
-            context,
-          ).showSnackBar(SnackBar(content: Text(authState.message)));
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(content: Text(authState.message)),
+          );
           Navigator.of(context).pushAndRemoveUntil(
             MaterialPageRoute(builder: (context) => const LoginScreen()),
             (Route<dynamic> route) => false,
           );
         } else if (authState is AuthError) {
           ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(
-              content: Text(authState.message),
-              backgroundColor: AppColors.errorColor,
-            ),
+            SnackBar(content: Text(authState.message), backgroundColor: AppColors.errorColor),
           );
         }
       },
@@ -76,29 +67,30 @@ class _HomeScreenState extends State<HomeScreen> {
           builder: (context, navState) {
             int currentScreenIndex = navState.currentIndex;
             Widget currentBody = _bottomNavScreens[currentScreenIndex];
-            String appBarTitle = AppStrings.appName; // Título por defecto
+            String appBarTitle = AppStrings.appName;
 
             if (navState is NavigationDrawerItemChanged) {
               currentBody = _drawerScreens[navState.drawerItemIndex];
-              // Aquí podrías cambiar el título del AppBar según la sección del Drawer
+              // --- TÍTULOS ACTUALIZADOS ---
               switch (navState.drawerItemIndex) {
                 case 0: appBarTitle = 'Home'; break;
                 case 1: appBarTitle = 'Museos'; break;
-                case 2: appBarTitle = 'Hoteles';  break;
+                case 2: appBarTitle = 'Hoteles'; break;
                 case 3: appBarTitle = 'Restaurantes'; break;
-                case 4: appBarTitle = 'Parques';  break;
-                case 5: appBarTitle = 'Playas'; break;
-                case 6: appBarTitle = 'Cafeterías'; break;
-                case 7: appBarTitle = 'Bares';  break;
-                default: appBarTitle = 'Home';  break;
+                case 4: appBarTitle = 'Cafeterías'; break;
+                case 5: appBarTitle = 'Parques'; break;
+                case 6: appBarTitle = 'Playas'; break;
+                case 7: appBarTitle = 'Bares'; break;
+                case 8: appBarTitle = 'Bancos'; break;
+                default: appBarTitle = 'Home'; break;
               }
             } else if (navState is NavigationTabChanged) {
-              switch (navState.currentIndex) {
-                case 0: appBarTitle = 'Lugares Favoritos';  break;
-                case 1: appBarTitle = 'Home'; break;
-                case 2: appBarTitle = 'Experiencias y Eventos'; break;
-                default:  appBarTitle = 'Home'; break;
-              }
+                switch (navState.currentIndex) {
+                  case 0: appBarTitle = 'Lugares Favoritos'; break;
+                  case 1: appBarTitle = 'Home'; break;
+                  case 2: appBarTitle = 'Experiencias y Eventos'; break;
+                  default: appBarTitle = 'Home'; break;
+                }
             }
 
             return Scaffold(
@@ -114,17 +106,14 @@ class _HomeScreenState extends State<HomeScreen> {
                   ),
                 ],
               ),
-              drawer: CustomNavigationDrawer(), // Nuestro Navigation Drawer
-              body: currentBody, // Contenido de la pantalla actual
+              drawer: const CustomNavigationDrawer(),
+              body: currentBody,
               bottomNavigationBar: BottomNavigationBar(
                 currentIndex: navState.currentIndex,
                 selectedItemColor: AppColors.primaryColor,
                 unselectedItemColor: Colors.grey,
                 onTap: (index) {
-                  // Cuando se toca un ítem del Bottom Nav, despacha el evento
-                  BlocProvider.of<NavigationBloc>(
-                    context,
-                  ).add(NavigateToTabEvent(index));
+                  BlocProvider.of<NavigationBloc>(context).add(NavigateToTabEvent(index));
                 },
                 items: const [
                   BottomNavigationBarItem(

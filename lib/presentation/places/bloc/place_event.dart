@@ -1,4 +1,3 @@
-// vive_huanchaco/lib/features/places/presentation/bloc/place_event.dart
 part of 'place_bloc.dart';
 
 abstract class PlaceEvent extends Equatable {
