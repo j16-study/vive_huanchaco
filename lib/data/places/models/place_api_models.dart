@@ -7,10 +7,10 @@ class SearchNearbyResponse {
   SearchNearbyResponse({required this.places});
 
   factory SearchNearbyResponse.fromJson(Map<String, dynamic> json) {
-    if (json['places'] == null) return SearchNearbyResponse(places: []);
-    final list = json['places'] as List;
-    final results = list.map((p) => Place.fromJson(p)).toList();
-    return SearchNearbyResponse(places: results);
+    final list = json['places'] as List? ?? [];
+    return SearchNearbyResponse(
+      places: list.map((item) => Place.fromJson(item)).toList(),
+    );
   }
 }
 
@@ -35,10 +35,9 @@ class Place {
     final photoList = json['photos'] as List?;
     return Place(
       name: json['name'] ?? '',
-      displayName:
-          DisplayName.fromJson(json['displayName'] ?? {'text': 'Sin nombre'}),
+      displayName: DisplayName.fromJson(json['displayName'] ?? {'text': 'Nombre no disponible'}),
       formattedAddress: json['formattedAddress'],
-      location: Location.fromJson(json['location']),
+      location: Location.fromJson(json['location'] ?? {'latitude': 0.0, 'longitude': 0.0}),
       rating: (json['rating'] as num?)?.toDouble(),
       photos: photoList?.map((p) => Photo.fromJson(p)).toList(),
     );
@@ -85,8 +84,8 @@ class Photo {
   factory Photo.fromJson(Map<String, dynamic> json) {
     return Photo(
       name: json['name'],
-      width: json['widthPx'],
-      height: json['heightPx'],
+      width: json['widthPx'] ?? 0,
+      height: json['heightPx'] ?? 0,
     );
   }
 }

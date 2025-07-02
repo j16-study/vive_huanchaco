@@ -4,10 +4,10 @@ import 'package:http/http.dart' as http;
 import 'package:vive_huanchaco/data/places/models/place_api_models.dart';
 
 class GooglePlacesDataSource {
-  final String _apiKey = "AIzaSyB-LMjIWKJb3eb6qmIBf7UGWsrIyRwvhxc"; // Reemplaza con tu API Key real
+  final String _apiKey = "AIzaSyB-LMjIWKJb3eb6qmIBf7UGWsrIyRwvhxc"; // ← reemplaza con tu API KEY real
   final String _baseUrl = "https://places.googleapis.com/v1/places:searchNearby";
 
-  Future<List<Place>> searchNearby(String type, Location centerLocation) async {
+  Future<List<Place>> searchNearby(String type, Location centerLocation, {double radius = 1000.0}) async {
     final url = Uri.parse(_baseUrl);
 
     final headers = {
@@ -26,7 +26,7 @@ class GooglePlacesDataSource {
             "latitude": centerLocation.latitude,
             "longitude": centerLocation.longitude
           },
-          "radius": 1000.0 // 1 km en Huanchaco
+          "radius": radius
         }
       },
       "languageCode": "es"
@@ -38,8 +38,8 @@ class GooglePlacesDataSource {
       final decoded = json.decode(response.body);
       return SearchNearbyResponse.fromJson(decoded).places;
     } else {
-      print("Error en Places API: ${response.body}");
-      throw Exception('Error al buscar lugares.');
+      print("❌ Error de Places API: ${response.body}");
+      return [];
     }
   }
 

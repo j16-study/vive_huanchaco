@@ -1,10 +1,8 @@
 // lib/presentation/places/pages/category_places_screen.dart
-import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:vive_huanchaco/data/places/datasources/google_places_data_source.dart';
 import 'package:vive_huanchaco/data/places/models/place_api_models.dart' as api;
-import 'package:vive_huanchaco/presentation/places/widgets/filter_options_widget.dart';
 
 class CategoryPlacesScreen extends StatefulWidget {
   final String category;
@@ -15,75 +13,77 @@ class CategoryPlacesScreen extends StatefulWidget {
 }
 
 class _CategoryPlacesScreenState extends State<CategoryPlacesScreen> {
-  final Set<Marker> _markers = {};
-  GoogleMapController? _mapController;
-  late final GooglePlacesDataSource _placesDataSource;
+  final api.Location _huanchacoLocation = api.Location(latitude: -8.0777, longitude: -79.1205);
+  final ScrollController _scrollController = ScrollController();
+
+  final GooglePlacesDataSource _placesDataSource = GooglePlacesDataSource();
+  final Set<String> _loadedPlaceIds = {};
 
   List<api.Place> _places = [];
-  bool _isLoading = true;
-  String _errorMessage = '';
+  Set<Marker> _markers = {};
+  GoogleMapController? _mapController;
 
-  final api.Location _huanchacoLocation =
-      api.Location(latitude: -8.0777, longitude: -79.1205);
+  bool _isLoading = true;
+  bool _isLoadingMore = false;
+  double _radius = 1000.0;
+  String _errorMessage = '';
 
   @override
   void initState() {
     super.initState();
-    _placesDataSource = GooglePlacesDataSource();
-    _fetchPlaces();
+    _loadPlaces();
+    _scrollController.addListener(_onScroll);
   }
 
-  String _getGooglePlaceType(String category) {
-    switch (category.toLowerCase()) {
-      case 'museos':
-        return 'museum';
-      case 'hoteles':
-        return 'lodging';
-      case 'restaurantes':
-        return 'restaurant';
-      case 'cafeterías':
-        return 'cafe';
-      case 'parques':
-        return 'park';
-      case 'bares':
-        return 'bar';
-      case 'bancos':
-        return 'bank';
-      default:
-        return 'tourist_attraction';
+  void _onScroll() {
+    if (_scrollController.position.pixels >= _scrollController.position.maxScrollExtent - 100 && !_isLoadingMore) {
+      if (_radius < 6000.0) {
+        _radius += 1000.0;
+        _loadPlaces(append: true);
+      }
     }
   }
 
-  Future<void> _fetchPlaces() async {
+  String _getGoogleType(String category) {
+    switch (category.toLowerCase()) {
+      case 'museos': return 'museum';
+      case 'hoteles': return 'lodging';
+      case 'restaurantes': return 'restaurant';
+      case 'cafeterías': return 'cafe';
+      case 'parques': return 'park';
+      case 'bares': return 'bar';
+      default: return 'tourist_attraction';
+    }
+  }
+
+  Future<void> _loadPlaces({bool append = false}) async {
     setState(() {
-      _isLoading = true;
-      _errorMessage = '';
+      if (!append) _isLoading = true;
+      _isLoadingMore = append;
     });
 
     try {
-      final type = _getGooglePlaceType(widget.category);
-      final results = await _placesDataSource.searchNearby(type, _huanchacoLocation);
+      final type = _getGoogleType(widget.category);
+      final newPlaces = await _placesDataSource.searchNearby(type, _huanchacoLocation, radius: _radius);
+      final uniquePlaces = newPlaces.where((p) => !_loadedPlaceIds.contains(p.name)).toList();
+      _loadedPlaceIds.addAll(uniquePlaces.map((e) => e.name));
 
-      _updateMarkers(results);
       setState(() {
-        _places = results;
+        _places.addAll(uniquePlaces);
+        _markers.addAll(uniquePlaces.map((p) => Marker(
+          markerId: MarkerId(p.name),
+          position: p.latLng,
+          infoWindow: InfoWindow(title: p.displayName.text),
+        )));
       });
     } catch (e) {
-      setState(() => _errorMessage = 'Error: $e');
+      setState(() => _errorMessage = e.toString());
     } finally {
-      setState(() => _isLoading = false);
+      setState(() {
+        _isLoading = false;
+        _isLoadingMore = false;
+      });
     }
-  }
-
-  void _updateMarkers(List<api.Place> places) {
-    final newMarkers = places.map((place) {
-      return Marker(
-        markerId: MarkerId(place.name),
-        position: place.latLng,
-        infoWindow: InfoWindow(title: place.displayName.text),
-      );
-    }).toSet();
-    setState(() => _markers.addAll(newMarkers));
   }
 
   @override
@@ -92,9 +92,9 @@ class _CategoryPlacesScreenState extends State<CategoryPlacesScreen> {
       children: [
         GoogleMap(
           initialCameraPosition: CameraPosition(
-              target: LatLng(
-                  _huanchacoLocation.latitude, _huanchacoLocation.longitude),
-              zoom: 14),
+            target: LatLng(_huanchacoLocation.latitude, _huanchacoLocation.longitude),
+            zoom: 14,
+          ),
           onMapCreated: (controller) => _mapController = controller,
           markers: _markers,
         ),
@@ -102,169 +102,65 @@ class _CategoryPlacesScreenState extends State<CategoryPlacesScreen> {
           initialChildSize: 0.5,
           minChildSize: 0.5,
           maxChildSize: 1.0,
-          builder: (context, scrollController) {
-            return Container(
-              decoration: const BoxDecoration(
-                color: Colors.white,
-                borderRadius:
-                    BorderRadius.vertical(top: Radius.circular(20)),
-                boxShadow: [BoxShadow(blurRadius: 10, color: Colors.black26)],
-              ),
-              child: Column(
-                children: [
-                  Container(
-                    width: 40,
-                    height: 5,
-                    margin: const EdgeInsets.symmetric(vertical: 10),
-                    decoration: BoxDecoration(
-                        color: Colors.grey[300],
-                        borderRadius: BorderRadius.circular(10)),
-                  ),
-                  _buildSearchAndFilterBar(),
-                  Expanded(
-                    child: _isLoading
-                        ? const Center(child: CircularProgressIndicator())
-                        : _buildContent(scrollController),
-                  ),
-                ],
-              ),
-            );
-          },
+          builder: (_, __) => Container(
+            decoration: BoxDecoration(
+              color: Colors.white,
+              borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+            ),
+            child: _buildContent(),
+          ),
         ),
       ],
     );
   }
 
-  Widget _buildContent(ScrollController scrollController) {
+  Widget _buildContent() {
+    if (_isLoading) return const Center(child: CircularProgressIndicator());
     if (_errorMessage.isNotEmpty) {
-      return Center(
-        child: Padding(
-          padding: const EdgeInsets.all(16.0),
-          child: Text(_errorMessage,
-              textAlign: TextAlign.center,
-              style: const TextStyle(
-                  color: Colors.red, fontWeight: FontWeight.bold)),
-        ),
-      );
+      return Center(child: Text('Error: $_errorMessage', style: TextStyle(color: Colors.red)));
     }
-    if (_places.isEmpty) {
-      return const Center(child: Text('No se encontraron lugares.'));
-    }
-    return _buildPlacesList(_places, scrollController);
-  }
+    if (_places.isEmpty) return const Center(child: Text('No se encontraron lugares.'));
 
-  Widget _buildSearchAndFilterBar() {
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
-      child: Row(
-        children: [
-          Expanded(
-            child: TextField(
-              decoration: InputDecoration(
-                hintText: 'Buscar en ${widget.category}...',
-                prefixIcon: const Icon(Icons.search),
-                border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(30),
-                    borderSide: BorderSide.none),
-                filled: true,
-                fillColor: Colors.grey[200],
-                contentPadding: EdgeInsets.zero,
-              ),
-            ),
-          ),
-          const SizedBox(width: 10),
-          IconButton(
-            style: IconButton.styleFrom(backgroundColor: Colors.grey[200]),
-            icon: const Icon(Icons.filter_list),
-            onPressed: () {
-              showModalBottomSheet(
-                context: context,
-                isScrollControlled: true,
-                builder: (_) => const FilterOptionsWidget(),
-              );
-            },
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildPlacesList(
-      List<api.Place> places, ScrollController scrollController) {
     return ListView.builder(
-      controller: scrollController,
-      itemCount: places.length,
-      itemBuilder: (context, index) {
-        final place = places[index];
-        final photoName = place.photos?.isNotEmpty == true
-            ? place.photos!.first.name
-            : null;
-        final photoUrl =
-            photoName != null ? _placesDataSource.getPhotoUrl(photoName) : null;
+      controller: _scrollController,
+      itemCount: _places.length + (_isLoadingMore ? 1 : 0),
+      itemBuilder: (_, index) {
+        if (index >= _places.length) return const Padding(
+          padding: EdgeInsets.all(16), child: Center(child: CircularProgressIndicator()));
+        
+        final place = _places[index];
+        final photo = place.photos?.isNotEmpty == true ? place.photos!.first.name : null;
+        final photoUrl = photo != null ? _placesDataSource.getPhotoUrl(photo) : null;
 
         return Card(
-          elevation: 4,
-          shape:
-              RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
           margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-          child: Padding(
-            padding: const EdgeInsets.all(12.0),
-            child: Row(
-              crossAxisAlignment: CrossAxisAlignment.start,
+          child: ListTile(
+            leading: photoUrl != null
+                ? ClipRRect(
+                    borderRadius: BorderRadius.circular(8),
+                    child: Image.network(photoUrl, width: 60, height: 60, fit: BoxFit.cover),
+                  )
+                : const Icon(Icons.image, size: 48, color: Colors.grey),
+            title: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                // Foto
-                ClipRRect(
-                  borderRadius: BorderRadius.circular(8),
-                  child: photoUrl != null
-                      ? Image.network(
-                          photoUrl,
-                          width: 60,
-                          height: 60,
-                          fit: BoxFit.cover,
-                        )
-                      : const Icon(Icons.image, size: 48, color: Colors.grey),
-                ),
-                const SizedBox(width: 12),
-                // Info
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
+                Expanded(child: Text(place.displayName.text, overflow: TextOverflow.ellipsis)),
+                if (place.rating != null)
+                  Row(
                     children: [
-                      // Título y calificación
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                        children: [
-                          Expanded(
-                            child: Text(
-                              place.displayName.text,
-                              style: const TextStyle(
-                                  fontWeight: FontWeight.bold, fontSize: 16),
-                              overflow: TextOverflow.ellipsis,
-                            ),
-                          ),
-                          if (place.rating != null)
-                            Row(
-                              children: [
-                                const Icon(Icons.star,
-                                    color: Colors.amber, size: 16),
-                                const SizedBox(width: 4),
-                                Text('${place.rating}',
-                                    style: const TextStyle(
-                                        fontWeight: FontWeight.bold)),
-                              ],
-                            ),
-                        ],
-                      ),
-                      const SizedBox(height: 4),
-                      Text(
-                        place.formattedAddress ?? 'Dirección no disponible',
-                        style: const TextStyle(color: Colors.black54),
-                      ),
+                      Icon(Icons.star, color: Colors.amber, size: 16),
+                      SizedBox(width: 4),
+                      Text(place.rating!.toStringAsFixed(1)),
                     ],
                   ),
-                ),
               ],
             ),
+            subtitle: Text(place.formattedAddress ?? 'Dirección no disponible'),
+            onTap: () {
+              _mapController?.animateCamera(
+                CameraUpdate.newLatLngZoom(place.latLng, 16),
+              );
+            },
           ),
         );
       },
