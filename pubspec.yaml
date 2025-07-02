@@ -28,7 +28,6 @@ dependencies:
 # --- 2. Ubicación y Mapas ---
   google_maps_flutter: ^2.12.3
   geolocator: ^14.0.1
-  flutter_google_maps_webservices: ^1.1.1
 
 # --- 3. Gestión de Estado y Arquitectura ---  
   flutter_bloc: ^9.1.1
