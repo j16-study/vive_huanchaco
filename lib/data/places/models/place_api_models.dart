@@ -1,25 +1,21 @@
 // lib/data/places/models/place_api_models.dart
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 
-// Modelo para la respuesta principal de la API
 class SearchNearbyResponse {
   final List<Place> places;
 
   SearchNearbyResponse({required this.places});
 
   factory SearchNearbyResponse.fromJson(Map<String, dynamic> json) {
-    if (json['places'] == null) {
-      return SearchNearbyResponse(places: []);
-    }
-    var placesList = json['places'] as List;
-    List<Place> placeObjects = placesList.map((p) => Place.fromJson(p)).toList();
-    return SearchNearbyResponse(places: placeObjects);
+    if (json['places'] == null) return SearchNearbyResponse(places: []);
+    final list = json['places'] as List;
+    final results = list.map((p) => Place.fromJson(p)).toList();
+    return SearchNearbyResponse(places: results);
   }
 }
 
-// Modelo para cada lugar individual
 class Place {
-  final String name; // El ID en el formato "places/ChIJ..."
+  final String name;
   final DisplayName displayName;
   final String? formattedAddress;
   final Location location;
@@ -36,12 +32,13 @@ class Place {
   });
 
   factory Place.fromJson(Map<String, dynamic> json) {
-    var photoList = json['photos'] as List?;
+    final photoList = json['photos'] as List?;
     return Place(
       name: json['name'] ?? '',
-      displayName: DisplayName.fromJson(json['displayName'] ?? {'text': 'Nombre no disponible'}),
+      displayName:
+          DisplayName.fromJson(json['displayName'] ?? {'text': 'Sin nombre'}),
       formattedAddress: json['formattedAddress'],
-      location: Location.fromJson(json['location'] ?? {'latitude': 0.0, 'longitude': 0.0}),
+      location: Location.fromJson(json['location']),
       rating: (json['rating'] as num?)?.toDouble(),
       photos: photoList?.map((p) => Photo.fromJson(p)).toList(),
     );
@@ -50,8 +47,6 @@ class Place {
   LatLng get latLng => LatLng(location.latitude, location.longitude);
 }
 
-// --- Sub-modelos ---
-
 class DisplayName {
   final String text;
   final String languageCode;
@@ -59,7 +54,10 @@ class DisplayName {
   DisplayName({required this.text, required this.languageCode});
 
   factory DisplayName.fromJson(Map<String, dynamic> json) {
-    return DisplayName(text: json['text'], languageCode: json['languageCode'] ?? 'es');
+    return DisplayName(
+      text: json['text'] ?? 'Nombre no disponible',
+      languageCode: json['languageCode'] ?? 'es',
+    );
   }
 }
 
@@ -70,13 +68,15 @@ class Location {
   Location({required this.latitude, required this.longitude});
 
   factory Location.fromJson(Map<String, dynamic> json) {
-    return Location(latitude: json['latitude'], longitude: json['longitude']);
+    return Location(
+      latitude: json['latitude']?.toDouble() ?? 0.0,
+      longitude: json['longitude']?.toDouble() ?? 0.0,
+    );
   }
 }
 
 class Photo {
-  // El name de la foto es su identificador único, ej: "places/ChIJ.../photos/Aap..."
-  final String name; 
+  final String name;
   final int width;
   final int height;
 
