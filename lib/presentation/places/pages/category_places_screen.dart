@@ -1,9 +1,9 @@
+// lib/presentation/places/pages/category_places_screen.dart
 import 'dart:async';
 import 'package:flutter/material.dart';
-import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
-import 'package:vive_huanchaco/domain/places/entities/place.dart';
-import 'package:vive_huanchaco/presentation/places/bloc/place_bloc.dart';
+import 'package:vive_huanchaco/data/places/datasources/google_places_data_source.dart';
+import 'package:vive_huanchaco/data/places/models/place_api_models.dart' as api; // Usamos un prefijo
 import 'package:vive_huanchaco/presentation/places/widgets/filter_options_widget.dart';
 
 class CategoryPlacesScreen extends StatefulWidget {
@@ -17,129 +17,129 @@ class CategoryPlacesScreen extends StatefulWidget {
 class _CategoryPlacesScreenState extends State<CategoryPlacesScreen> {
   final Set<Marker> _markers = {};
   GoogleMapController? _mapController;
-  final DraggableScrollableController _scrollController = DraggableScrollableController();
-  double _mapFlex = 0.5; // Representa el 50% inicial del mapa
+  late final GooglePlacesDataSource _placesDataSource;
+
+  List<api.Place> _places = [];
+  bool _isLoading = true;
+  String _errorMessage = '';
+
+  final api.Location _huanchacoLocation = api.Location(latitude: -8.0777, longitude: -79.1205);
 
   @override
   void initState() {
     super.initState();
-    context.read<PlaceBloc>().add(GetPlacesByCategoryEvent(category: widget.category));
-    // Escuchar los cambios del DraggableScrollableSheet para ajustar el tamaño del mapa
-    _scrollController.addListener(() {
-      if (_scrollController.size > 0.5 && _scrollController.size <= 0.7) {
-        setState(() {
-          // El mapa se encoge hasta el 30% (1.0 - 0.7)
-          _mapFlex = 1.0 - _scrollController.size; 
-        });
-      } else if (_scrollController.size > 0.9) {
-        // Cuando la lista está casi al 100%, el mapa ocupa 0 espacio
-        setState(() {
-          _mapFlex = 0;
-        });
-      }
-    });
+    _placesDataSource = GooglePlacesDataSource();
+    _fetchPlaces();
   }
 
-  void _updateMarkers(List<Place> places) {
+  String _getGooglePlaceType(String category) {
+    switch (category.toLowerCase()) {
+      case 'museos': return 'museum';
+      case 'hoteles': return 'lodging';
+      case 'restaurantes': return 'restaurant';
+      case 'cafeterías': return 'cafe';
+      case 'parques': return 'park';
+      case 'bares': return 'bar';
+      case 'bancos': return 'bank';
+      default: return 'tourist_attraction';
+    }
+  }
+
+  Future<void> _fetchPlaces() async {
     if (!mounted) return;
     setState(() {
-      _markers.clear();
-      for (final place in places) {
-        _markers.add(Marker(
-          markerId: MarkerId(place.id),
-          position: place.location,
-          infoWindow: InfoWindow(title: place.name, snippet: place.address),
-        ));
-      }
+      _isLoading = true;
+      _errorMessage = '';
     });
-    _moveCameraToBounds(places);
+
+    try {
+      final placeType = _getGooglePlaceType(widget.category);
+      final results = await _placesDataSource.searchNearby(placeType, _huanchacoLocation);
+
+      if (!mounted) return;
+      _updateMarkers(results);
+      setState(() {
+        _places = results;
+      });
+
+    } catch (e) {
+      if (!mounted) return;
+      setState(() => _errorMessage = 'Error: $e');
+    } finally {
+      if (mounted) setState(() => _isLoading = false);
+    }
   }
 
-  void _moveCameraToBounds(List<Place> places) {
-    if (_mapController == null || places.isEmpty) return;
-    final bounds = _createBounds(places);
-    _mapController!.animateCamera(CameraUpdate.newLatLngBounds(bounds, 50.0));
+  void _updateMarkers(List<api.Place> places) {
+    final newMarkers = places.map((place) {
+      return Marker(
+        markerId: MarkerId(place.name), // Usamos el 'name' como ID único
+        position: place.latLng,
+        infoWindow: InfoWindow(title: place.displayName.text),
+      );
+    }).toSet();
+    if (mounted) setState(() => _markers.addAll(newMarkers));
   }
-
-  LatLngBounds _createBounds(List<Place> places) {
-    final lats = places.map((p) => p.location.latitude);
-    final lngs = places.map((p) => p.location.longitude);
-    return LatLngBounds(
-      southwest: LatLng(lats.reduce((a, b) => a < b ? a : b), lngs.reduce((a, b) => a < b ? a : b)),
-      northeast: LatLng(lats.reduce((a, b) => a > b ? a : b), lngs.reduce((a, b) => a > b ? a : b)),
-    );
-  }
+  
+  // ... (El resto del archivo, build, _buildSearchAndFilterBar, etc. sigue abajo)
 
   @override
   Widget build(BuildContext context) {
-    return BlocListener<PlaceBloc, PlaceState>(
-      listener: (context, state) {
-        if (state is PlacesLoaded) {
-          _updateMarkers(state.places);
-        } else if (state is PlaceError) {
-          ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Error: ${state.message}')));
-        }
-      },
-      child: Stack(
-        children: [
-          // MAPA
-          AnimatedContainer(
-            duration: const Duration(milliseconds: 100),
-            height: MediaQuery.of(context).size.height * (1 - (_mapFlex)),
-            child: GoogleMap(
-              initialCameraPosition: const CameraPosition(target: LatLng(-8.086, -79.124), zoom: 13),
-              onMapCreated: (controller) => _mapController = controller,
-              markers: _markers,
-            ),
-          ),
-          // LISTA DESLIZABLE
-          DraggableScrollableSheet(
-            controller: _scrollController,
-            initialChildSize: 0.5, // La lista ocupa el 50%
-            minChildSize: 0.5,     // Mínimo 50%
-            maxChildSize: 1.0,     // Máximo 100%
-            builder: (BuildContext context, ScrollController scrollController) {
-              return Container(
-                decoration: const BoxDecoration(
-                  color: Colors.white,
-                  borderRadius: BorderRadius.only(topLeft: Radius.circular(20), topRight: Radius.circular(20)),
-                  boxShadow: [BoxShadow(blurRadius: 10.0, color: Colors.black26)],
-                ),
-                child: Column(
-                  children: [
-                    // Handle para indicar que es deslizable
-                    Container(
-                      width: 40,
-                      height: 5,
-                      margin: const EdgeInsets.symmetric(vertical: 10),
-                      decoration: BoxDecoration(color: Colors.grey[300], borderRadius: BorderRadius.circular(10)),
-                    ),
-                    _buildSearchAndFilterBar(),
-                    Expanded(
-                      child: BlocBuilder<PlaceBloc, PlaceState>(
-                        builder: (context, state) {
-                          if (state is PlaceLoading) {
-                            return const Center(child: CircularProgressIndicator());
-                          }
-                          if (state is PlacesLoaded) {
-                            return _buildPlacesList(state.places, scrollController);
-                          }
-                          return const Center(child: Text('Selecciona una categoría para ver lugares.'));
-                        },
-                      ),
-                    ),
-                  ],
-                ),
-              );
-            },
-          ),
-        ],
-      ),
+    return Stack(
+      children: [
+        GoogleMap(
+          initialCameraPosition: CameraPosition(target: LatLng(_huanchacoLocation.latitude, _huanchacoLocation.longitude), zoom: 14),
+          onMapCreated: (controller) => _mapController = controller,
+          markers: _markers,
+        ),
+        DraggableScrollableSheet(
+          initialChildSize: 0.5, minChildSize: 0.5, maxChildSize: 1.0,
+          builder: (BuildContext context, ScrollController scrollController) {
+            return Container(
+              decoration: const BoxDecoration(
+                color: Colors.white,
+                borderRadius: BorderRadius.only(topLeft: Radius.circular(20), topRight: Radius.circular(20)),
+                boxShadow: [BoxShadow(blurRadius: 10.0, color: Colors.black26)],
+              ),
+              child: Column(
+                children: [
+                  Container(
+                    width: 40, height: 5,
+                    margin: const EdgeInsets.symmetric(vertical: 10),
+                    decoration: BoxDecoration(color: Colors.grey[300], borderRadius: BorderRadius.circular(10)),
+                  ),
+                  _buildSearchAndFilterBar(),
+                  Expanded(
+                    child: _isLoading
+                        ? const Center(child: CircularProgressIndicator())
+                        : _buildContent(scrollController),
+                  ),
+                ],
+              ),
+            );
+          },
+        ),
+      ],
     );
+  }
+  
+  Widget _buildContent(ScrollController scrollController) {
+    if (_errorMessage.isNotEmpty) {
+      return Center(
+        child: Padding(
+          padding: const EdgeInsets.all(16.0),
+          child: Text(_errorMessage, textAlign: TextAlign.center, style: const TextStyle(color: Colors.red, fontWeight: FontWeight.bold)),
+        ),
+      );
+    }
+    if (_places.isEmpty) {
+      return const Center(child: Text('No se encontraron lugares en esta categoría.'));
+    }
+    return _buildPlacesList(_places, scrollController);
   }
 
   Widget _buildSearchAndFilterBar() {
-    return Padding(
+     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
       child: Row(
         children: [
@@ -172,31 +172,47 @@ class _CategoryPlacesScreenState extends State<CategoryPlacesScreen> {
     );
   }
 
-  Widget _buildPlacesList(List<Place> places, ScrollController scrollController) {
-    if (places.isEmpty) {
-      return const Center(child: Text('No se encontraron lugares.'));
-    }
+  Widget _buildPlacesList(List<api.Place> places, ScrollController scrollController) {
     return ListView.builder(
       controller: scrollController,
       itemCount: places.length,
       itemBuilder: (context, index) {
         final place = places[index];
+        final photoName = place.photos?.isNotEmpty == true ? place.photos!.first.name : null;
+
         return ListTile(
           leading: SizedBox(
-            width: 60,
-            height: 60,
+            width: 60, height: 60,
             child: ClipRRect(
               borderRadius: BorderRadius.circular(8),
-              child: Image.network(
-                place.imageUrl ?? 'https://via.placeholder.com/150',
-                fit: BoxFit.cover,
-                errorBuilder: (_, __, ___) => const Icon(Icons.business),
-              ),
+              child: photoName != null
+                  ? Image.network(
+                      _placesDataSource.getPhotoUrl(photoName),
+                      fit: BoxFit.cover,
+                      errorBuilder: (_, __, ___) => const Icon(Icons.business, color: Colors.grey),
+                    )
+                  : const Icon(Icons.business, size: 40, color: Colors.grey),
             ),
           ),
-          title: Text(place.name, style: const TextStyle(fontWeight: FontWeight.bold)),
-          subtitle: Text(place.address ?? 'Dirección no disponible'),
-          onTap: () => print('Ir a ${place.name}'),
+          title: Text(place.displayName.text, style: const TextStyle(fontWeight: FontWeight.bold)),
+          subtitle: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              if (place.rating != null)
+                Row(
+                  children: [
+                    Text(place.rating.toString(), style: const TextStyle(fontWeight: FontWeight.bold)),
+                    const Icon(Icons.star, color: Colors.amber, size: 16),
+                  ],
+                ),
+              Text(place.formattedAddress ?? 'Dirección no disponible'),
+            ],
+          ),
+          onTap: () {
+            _mapController?.animateCamera(
+              CameraUpdate.newLatLngZoom(place.latLng, 16.0),
+            );
+          },
         );
       },
     );
